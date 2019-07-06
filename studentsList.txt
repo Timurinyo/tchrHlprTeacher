@@ -1,4 +1,0 @@
-192.168.0.1=testName0
-192.168.0.2=testName1
-192.168.0.3=testName2
-192.168.0.4=testName3
