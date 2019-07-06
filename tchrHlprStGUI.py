@@ -83,13 +83,21 @@ class MainWindow(QMainWindow):
         self.title = 'Teacher Helper'
         self.setWindowTitle(self.title)
 
+
         self.studentNum = 0
+
         self.studentNames = []
+        self.studentAddresses = []
+        self.studentAges = []
+        #self.studentInfo = {}
+
+        #self.studentIPs = []
         self.studentCheckboxes = []
         self.studentButtons = []
-        self.launchMinecraftButtons = []
+        self.launchMinecraftPSButtons = []
+        self.launchMinecraftPRButtons = []
+        self.closeMinecraftButtons = []
         #self.studentLockStates = []
-        self.studentAddresses = []
         self.studentLayouts = []
         self.studentLabelsIcons = []
         self.studentLabels = []
@@ -108,17 +116,30 @@ class MainWindow(QMainWindow):
         self.lockAllButton.setIcon(QIcon('unlocked.png'))
         self.lockAllButton.setIconSize(QSize(100,30))
 
-        self.launchMinecraftForAllButton = QPushButton('')
-        #self.launchMinecraftForAllButton.setCheckable(True)
-        self.launchMinecraftForAllButton.setChecked(False)
-        self.launchMinecraftForAllButton.pressed.connect(self.launchMinecraftEveryChecked)
-        self.launchMinecraftForAllButton.setIcon(QIcon('minecraft.ico'))
-        self.launchMinecraftForAllButton.setIconSize(QSize(30,30))
+        self.launchMinecraftPSForAllButton = QPushButton('')
+        self.launchMinecraftPSForAllButton.setChecked(False)
+        self.launchMinecraftPSForAllButton.pressed.connect(self.launchMinecraftPSEveryChecked)
+        self.launchMinecraftPSForAllButton.setIcon(QIcon('minecraft.ico'))
+        self.launchMinecraftPSForAllButton.setIconSize(QSize(30,30))
+
+        self.launchMinecraftPRForAllButton = QPushButton('')
+        self.launchMinecraftPRForAllButton.setChecked(False)
+        self.launchMinecraftPRForAllButton.pressed.connect(self.launchMinecraftPREveryChecked)
+        self.launchMinecraftPRForAllButton.setIcon(QIcon('agent_g.ico'))
+        self.launchMinecraftPRForAllButton.setIconSize(QSize(30,30))
+
+        self.closeMinecraftForAllButton = QPushButton('')
+        self.closeMinecraftForAllButton.setChecked(False)
+        self.closeMinecraftForAllButton.pressed.connect(self.closeMinecraftEveryChecked)
+        self.closeMinecraftForAllButton.setIcon(QIcon('closeMine.ico'))
+        self.closeMinecraftForAllButton.setIconSize(QSize(30,30))
 
         topLayout = QHBoxLayout()
         topLayout.addWidget(mainCheckbox)
         topLayout.addWidget(self.lockAllButton)
-        topLayout.addWidget(self.launchMinecraftForAllButton)
+        topLayout.addWidget(self.launchMinecraftPSForAllButton)
+        topLayout.addWidget(self.launchMinecraftPRForAllButton)
+        topLayout.addWidget(self.closeMinecraftForAllButton)
         topLayout.addStretch(1)
 
         self.layoutV.addLayout(topLayout)
@@ -130,51 +151,14 @@ class MainWindow(QMainWindow):
 
 
 
-        file = open('studentsList.txt')
-        for line in file:
-            self.studentNum += 1
-            studentInfo = line.split('=')
-            self.studentAddresses.append(studentInfo[0])
-            if studentInfo[1]:
-                self.studentName = studentInfo[1]
-            else:
-                self.studentName = "student"+self.studentNum
+        #file = open('studentsList.txt')
+        #for line in file:
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
+        self.client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.client.bind(("", 37020))
+        self.client.settimeout(False)
 
-            #self.studentNames.append(studentName)
-
-            self.studentCheckboxes.append(QCheckBox())
-            self.studentCheckboxes[-1].setChecked(True)
-            #self.studentCheckboxes[-1].setLayoutDirection(Qt.RightToLeft)
-            #self.studentLabelsIcons.append(QLabel())
-            #self.studentLabelsIcons[-1].setPixmap(QPixmap('unlocked.png'))
-            self.studentLabels.append(QLabel(self.studentName))
-            self.studentLabels[-1].setFont(QFont('SansSerif', 10))
-            #self.studentLabels[-1]
-            self.studentButtons.append(QPushButton(''))
-            #self.studentButtons[-1].setMaximumSize(QSize(32,32))
-            self.studentButtons[-1].setCheckable(True)
-            self.studentButtons[-1].setChecked(False)
-            self.studentButtons[-1].toggled.connect(self.make_lockStudent(self.studentNum-1))
-            self.studentButtons[-1].setIcon(QIcon('unlocked.png'))
-            self.studentButtons[-1].setIconSize(QSize(100,30))
-            #self.studentLockStates.append(False)
-            #studentLayout = QHBoxLayout()
-
-            self.launchMinecraftButtons.append(QPushButton(''))
-            self.launchMinecraftButtons[-1].setChecked(False)
-            self.launchMinecraftButtons[-1].pressed.connect(self.make_launchMinecraft(self.studentNum-1))
-            self.launchMinecraftButtons[-1].setIcon(QIcon('minecraft.ico'))
-            self.launchMinecraftButtons[-1].setIconSize(QSize(30,30))
-
-            self.studentLayouts.append(QHBoxLayout())
-            self.studentLayouts[-1].addWidget(self.studentCheckboxes[-1])
-            #self.studentLayouts[-1].addWidget(self.studentLabelsIcons[-1])
-            self.studentLayouts[-1].addWidget(self.studentLabels[-1])
-            self.studentLayouts[-1].addWidget(self.studentButtons[-1])
-            self.studentLayouts[-1].addWidget(self.launchMinecraftButtons[-1])
-            self.studentLayouts[-1].addStretch(1)
-            self.layoutV.addLayout(self.studentLayouts[-1])
-        file.close()
+        #file.close()
         #self.screenLocked = False
         self.counter = 0
         #self.teachermsg = ''
@@ -211,11 +195,27 @@ class MainWindow(QMainWindow):
         self.threadpool.setMaxThreadCount(1)
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-        self.timer = QTimer()
-        self.timer.setInterval(1000)
-        self.timer.timeout.connect(self.recurring_timer)
-        self.timer.start()
+        #self.IPlistenerThreadpool = QThreadPool()
+        #self.IPlistenerThreadpool.setMaxThreadCount(1)
 
+
+        self.timer1 = QTimer()
+        self.timer1.setInterval(3000)
+        self.timer1.timeout.connect(self.btn_state_timer)
+        self.timer1.start()
+
+        self.timer2 = QTimer()
+        self.timer2.setInterval(1000)
+        self.timer2.timeout.connect(self.listen_IP_timer)
+        self.timer2.start()
+
+        self.timer3 = QTimer()
+        self.timer3.setInterval(1000)
+        self.timer3.timeout.connect(self.olden_students)
+        self.timer3.start()
+
+        #self.UDPthreadpool = QThreadPool()
+        #self.UDPthreadpool.setMaxThreadCount(1)
         #tcpListener = Worker(self.listenTCP)
         #tcpListener.signals.result.connect(self.do_what_teacher_said)
         #tcpListener.signals.finished.connect(self.listen_again)
@@ -227,11 +227,25 @@ class MainWindow(QMainWindow):
 
     #def createTickBoxsGroup(self):
     #    self.tickBoxsGroup = QGroupBox("Group 1")
-    def launchMinecraftEveryChecked(self):
-        print("launched minecraft on all machines")
+    def launchMinecraftPSEveryChecked(self):
+        print("launched minecraft education on all machines")
         for i, cb in enumerate(self.studentCheckboxes):
             if cb.isChecked():
-                self.launchMinecraftButtons[i].click()
+                self.launchMinecraftPSButtons[i].click()
+
+    def launchMinecraftPREveryChecked(self):
+        print("launched minecraft programmig on all machines")
+        for i, cb in enumerate(self.studentCheckboxes):
+            if cb.isChecked():
+                self.launchMinecraftPRButtons[i].click()
+
+    def closeMinecraftEveryChecked(self):
+        print("closed minecraft on all machines")
+        for i, cb in enumerate(self.studentCheckboxes):
+            if cb.isChecked():
+                self.closeMinecraftButtons[i].click()
+
+
 
     def make_lockStudent(self, studentIndex):
         def lockStudent():
@@ -258,11 +272,23 @@ class MainWindow(QMainWindow):
                 print("student number {} was unlocked".format(studentIndex+1))
         return lockStudent
 
-    def make_launchMinecraft(self, studentIndex):
-        def launchMinecraft():
-            print(f"Minecraft launch is not implemented yet for student number {studentIndex}")
-        return launchMinecraft
+    def make_launchMinecraftPS(self, studentIndex):
+        def launchMinecraftPS():
+            self.sendMsgToSt(studentIndex, "launchPS")
+            #print(f"Minecraft launch is not implemented yet for student number {studentIndex}")
+        return launchMinecraftPS
 
+    def make_launchMinecraftPR(self, studentIndex):
+        def launchMinecraftPR():
+            self.sendMsgToSt(studentIndex, "launchPR")
+            #print(f"Minecraft launch is not implemented yet for student number {studentIndex}")
+        return launchMinecraftPR
+
+    def make_closeMinecraft(self, studentIndex):
+        def closeMinecraft():
+            self.sendMsgToSt(studentIndex, "closeMine")
+            #print(f"Minecraft launch is not implemented yet for student number {studentIndex}")
+        return closeMinecraft
 
     def lockMachine(self, studentIndex):
         self.sendMsgToSt(studentIndex, "l")
@@ -281,13 +307,16 @@ class MainWindow(QMainWindow):
 
         #for ipAddr in TCP_IP:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)
+        s.settimeout(0.2)
         try:
             s.connect((self.studentAddresses[studentIndex], TCP_PORT))
         except:
             print('connect timeout')
             return
-        s.send(MESSAGE.encode())
+        try:
+            s.send(MESSAGE.encode())
+        except:
+            print("Failed to send msg")
         try:
             data = s.recv(BUFFER_SIZE)
         except:
@@ -300,6 +329,13 @@ class MainWindow(QMainWindow):
         #    self.studentLockStates[studentIndex] = True
         #elif msg == "u":
         #    self.studentLockStates[studentIndex] = False
+
+    def olden_students(self):
+        for i in range(len(self.studentAges)):
+            self.studentAges[i] += 1
+            if self.studentAges[i] >= 30:
+                self.studentButtons[i].setChecked(False)
+
 
     def progress_fn(self, n):
         print("%d%% done" % n)
@@ -327,19 +363,49 @@ class MainWindow(QMainWindow):
         # Execute
         self.threadpool.start(worker)
 
+    def listenIP(self):
+        receivedNewInfo = False
+        try:
+            print("Listening IP")
+            data, addr = self.client.recvfrom(1024)
+            if data:
+                print(f"received data{data.decode()}")
+                name, IP = data.decode().split(",")
+                print(name)
+                print(IP)
+                receivedNewInfo = True
+                #data = ""
+        except:
+            receivedNewInfo = False
 
-    def recurring_timer(self):
-        self.counter += 1
-        if self.counter > 10:
-            print("sent lock command to those which button state is locke...")
-            self.counter = 0
+        if receivedNewInfo:
+            self.addStudent(name, IP)
+        #print("received message: %s"%data)
+        #print("test")
 
-            for i, btn in enumerate(self.studentButtons):
-                if self.studentCheckboxes[i].isChecked(): 
-                    if btn.isChecked():
-                        self.lockMachine(i)
-                    else:
-                        self.unlockMachine(i)
+    def listen_IP_timer(self):
+        print("Listening IP")
+        self.listenIP()
+
+
+    def btn_state_timer(self):
+        #studentListener = Worker(self.listenIP)
+        #self.threadpool.start(studentListener)
+        #studentListener = Worker(self.listenIP)
+        #self.IPlistenerThreadpool.start(studentListener)
+        #data, addr = self.client.recvfrom(1024)
+        #print("received message: %s"%data)
+        #self.counter += 1
+        #if self.counter > 10:
+        print("sent lock command to those which button state is locked...")
+        #self.counter = 0
+
+        for i, btn in enumerate(self.studentButtons):
+            if self.studentCheckboxes[i].isChecked(): 
+                if btn.isChecked():
+                    self.lockMachine(i)
+                else:
+                    self.unlockMachine(i)
                     #self.studentButtons[i].setChecked(state)
             #for btn in self.studentButtons:
             #    if btn.isChecked():
@@ -365,37 +431,102 @@ class MainWindow(QMainWindow):
                 self.studentButtons[i].setChecked(state)
         #print("locked all")
 
+    def addStudent(self, name, IP):
+        print("adding student")
+        if (name in self.studentNames):
+            studentIndex = self.studentNames.index(name)
+            self.studentAddresses[studentIndex] = IP
+            self.studentAges[studentIndex] = 0
+            print(f"student with name: {name} already exists")
+        else:
+            self.studentNum += 1
+            self.studentAddresses.append(IP)
+            self.studentNames.append(name)
+            self.studentAges.append(0)
+            #print("Added name and address")
+            self.studentCheckboxes.append(QCheckBox())
+            self.studentCheckboxes[-1].setChecked(True)
+            self.studentLabels.append(QLabel(name))
+            self.studentLabels[-1].setFont(QFont('SansSerif', 10))
+            #print("Added layout")
+            #self.studentLabels[-1]
+            self.studentButtons.append(QPushButton(''))
+            #self.studentButtons[-1].setMaximumSize(QSize(32,32))
+            self.studentButtons[-1].setCheckable(True)
+            self.studentButtons[-1].setChecked(False)
+            self.studentButtons[-1].toggled.connect(self.make_lockStudent(self.studentNum-1))
+            self.studentButtons[-1].setIcon(QIcon('unlocked.png'))
+            self.studentButtons[-1].setIconSize(QSize(100,30))
+            #self.studentLockStates.append(False)
+            #studentLayout = QHBoxLayout()
 
-    #def listenTCP(self, progress_callback):
-    #    TCP_PORT = 5005
-    #    BUFFER_SIZE = 20  # Normally 1024, but we want fast response
-#
-    #    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #    #timeoutTime = 6
-    #    #s.settimeout(timeoutTime)
-    #    s.bind(('', TCP_PORT)) #TCP_IPs
-    #    s.listen(1)
-    #    try: 
-    #        conn, addr = s.accept()
-    #    except:
-    #        return "Accept error"
-    #    print ('Connection address:', addr)
-    #    while 1:
-    #        data = conn.recv(BUFFER_SIZE)
-    #        if not data: 
-    #            break
-    #        print ("received data:", data.decode())
-    #        teachermsg = data.decode()
-    #        conn.send(data)  # echo                
-    #    conn.close()
-    #    return teachermsg
+            self.launchMinecraftPSButtons.append(QPushButton(''))
+            self.launchMinecraftPSButtons[-1].setChecked(False)
+            self.launchMinecraftPSButtons[-1].pressed.connect(self.make_launchMinecraftPS(self.studentNum-1))
+            self.launchMinecraftPSButtons[-1].setIcon(QIcon('minecraft.ico'))
+            self.launchMinecraftPSButtons[-1].setIconSize(QSize(30,30))
+            self.launchMinecraftPSButtons[-1].hide()
+            '''trying to remmove buttton with hide. If it doesn't help you can test visibility or
+             transperency method and then if still doesn't work just use regular function....It should be even easier!!!
+            '''
+            #other things to improve are in phone notes...Minecraft bug rememmber. Maybe use win32 to setforeground window or something like it... 
+            self.launchMinecraftPRButtons.append(QPushButton(''))
+            self.launchMinecraftPRButtons[-1].setChecked(False)
+            self.launchMinecraftPRButtons[-1].pressed.connect(self.make_launchMinecraftPR(self.studentNum-1))
+            self.launchMinecraftPRButtons[-1].setIcon(QIcon('agent_g.ico'))
+            self.launchMinecraftPRButtons[-1].setIconSize(QSize(30,30))
+            self.launchMinecraftPRButtons[-1].hide()
 
-    #def listen_again(self) :
-    #    tcpListener = Worker(self.listenTCP)
-    #    tcpListener.signals.result.connect(self.do_what_teacher_said)
-    #    tcpListener.signals.finished.connect(self.listen_again)
-    #    #tcpListener.signals.progress.connect(self.)
-    #    self.threadpool.start(tcpListener)
+            self.closeMinecraftButtons.append(QPushButton(''))
+            self.closeMinecraftButtons[-1].setChecked(False)
+            self.closeMinecraftButtons[-1].pressed.connect(self.make_closeMinecraft(self.studentNum-1))
+            self.closeMinecraftButtons[-1].setIcon(QIcon('closeMine.ico'))
+            self.closeMinecraftButtons[-1].setIconSize(QSize(30,30))
+            self.closeMinecraftButtons[-1].hide()
+
+
+            self.studentLayouts.append(QHBoxLayout())
+            self.studentLayouts[-1].addWidget(self.studentCheckboxes[-1])
+            #self.studentLayouts[-1].addWidget(self.studentLabelsIcons[-1])
+            self.studentLayouts[-1].addWidget(self.studentLabels[-1])
+            self.studentLayouts[-1].addWidget(self.studentButtons[-1])
+            self.studentLayouts[-1].addWidget(self.launchMinecraftPSButtons[-1])
+
+            self.studentLayouts[-1].addWidget(self.launchMinecraftPRButtons[-1])
+            self.studentLayouts[-1].addWidget(self.closeMinecraftButtons[-1])
+            self.studentLayouts[-1].addStretch(1)
+            self.layoutV.addLayout(self.studentLayouts[-1])
+
+        #def listenTCP(self, progress_callback):
+        #    TCP_PORT = 5005
+        #    BUFFER_SIZE = 20  # Normally 1024, but we want fast response
+    #
+        #    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #    #timeoutTime = 6
+        #    #s.settimeout(timeoutTime)
+        #    s.bind(('', TCP_PORT)) #TCP_IPs
+        #    s.listen(1)
+        #    try: 
+        #        conn, addr = s.accept()
+        #    except:
+        #        return "Accept error"
+        #    print ('Connection address:', addr)
+        #    while 1:
+        #        data = conn.recv(BUFFER_SIZE)
+        #        if not data: 
+        #            break
+        #        print ("received data:", data.decode())
+        #        teachermsg = data.decode()
+        #        conn.send(data)  # echo                
+        #    conn.close()
+        #    return teachermsg
+
+        #def listen_again(self) :
+        #    tcpListener = Worker(self.listenTCP)
+        #    tcpListener.signals.result.connect(self.do_what_teacher_said)
+        #    tcpListener.signals.finished.connect(self.listen_again)
+        #    #tcpListener.signals.progress.connect(self.)
+        #    self.threadpool.start(tcpListener)
 
 
 app = QApplication([])
